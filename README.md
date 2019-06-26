@@ -13,5 +13,5 @@ I put in some knobs to fine tune the experience:
 
 ## Discussion?
 
-* Use BitBucket's "Issues" system
-* On this mod's thread in the previously-linked Stardew Valley forums.
+* Use [BitBucket's "Issues" system](https://bitbucket.org/pepoluan/sdvmod-grandfather-gift-remade/issues?status=new&status=open)
+* On [this mod's thread](https://community.playstarbound.com/threads/remaking-grandfathers-gift.155872/) in the previously-linked Stardew Valley forums.
