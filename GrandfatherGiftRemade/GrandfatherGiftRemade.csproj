@@ -32,6 +32,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <PlatformTarget>x86</PlatformTarget>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -45,7 +46,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="pepoHelper.cs" />
-    <Compile Include="GGRMenues.cs" />
     <Compile Include="GrandfatherGiftRemade.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
