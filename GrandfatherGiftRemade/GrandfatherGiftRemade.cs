@@ -6,6 +6,7 @@ using StardewModdingAPI.Utilities;
 using StardewValley;
 using StardewValley.Menus;
 using StardewValley.Tools;
+using pepoHelper;
 
 namespace GrandfatherGiftRemade
 {
@@ -119,21 +120,16 @@ namespace GrandfatherGiftRemade
 
             this.DeregisterEvents("triggered");
 
+            // First pop-up: Narration about what happened last night
             string message = this.Helper.Translation.Get("message1");
             pepoHelper.DialogOnBlack newDayMessage = new pepoHelper.DialogOnBlack(message);
             Game1.activeClickableMenu = newDayMessage;
 
-            // TODO: Shift farmer 1 tile to the left
+            // Shift farmer to the left to leave the bed
             Farmer farmer = Game1.player;
-            int cur_x = farmer.getTileX();
-            int cur_y = farmer.getTileY();
-            this.Monitor.Log($"farmer originally at ({cur_x}, {cur_y})");
-            int new_x = cur_x - 2;
-            farmer.setTileLocation(new Vector2(new_x, cur_y));
-            farmer.faceDirection(3);
-            this.Monitor.Log($"farmer now at ({new_x}, {cur_y}) facing 3 (left)");
+            farmer.moveHorizTiles(-2);
 
-            // TODO: Add a package object with interaction event
+            // TODO: Add a package object with interaction event -- see OnPackageOpen below
 
             // TODO: Remove package from map, add weapon & chest to inventory
 
