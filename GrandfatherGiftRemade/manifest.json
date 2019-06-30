@@ -1,0 +1,10 @@
+{
+  "Name": "Grandfather's Gift Remade",
+  "Author": "pepoluan",
+  "Version": "1.0.0",
+  "Description": "A remade of the Grandfather's Gift mod on NexusMods",
+  "UniqueID": "pepoluan.GrandfatherGiftRemade",
+  "EntryDll": "GrandfatherGiftRemade.dll",
+  "MinimumApiVersion": "2.11.0",
+  "UpdateKeys": []
+}
