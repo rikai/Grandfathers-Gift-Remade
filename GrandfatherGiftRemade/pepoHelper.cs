@@ -94,6 +94,18 @@ namespace pepoHelper
             pepoDrawer.BlackScreen();
             base.draw(b);
         }
-
     }
+
+    public static class FarmerExtension
+    {
+        public static void moveHorizTiles(this Farmer f, int n)
+        {
+            int cur_x = f.getTileX();
+            int cur_y = f.getTileY();
+            int new_x = cur_x + n;
+            f.setTileLocation(new Vector2(new_x, cur_y));
+            f.faceDirection(n < 0 ? 3 : 1);
+        }
+    }
+
 }
