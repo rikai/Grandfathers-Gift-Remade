@@ -132,17 +132,11 @@ namespace GrandfatherGiftRemade
         private void OnDayStarted(object sender, DayStartedEventArgs e)
         {
             var curDate = SDate.Now();
-            if (curDate > triggerDate)
-            {
-                this.DeregisterEvents("passed triggerDate");
-            }
             if (curDate != triggerDate)
             {
                 this.Log("new day, but not our day", LogLevel.Trace);
                 return;
             }
-
-            this.DeregisterEvents("triggered");
 
             Farmer farmer = Game1.player;
             MeleeWeapon weapon = new MeleeWeapon(WEAP_ID);
