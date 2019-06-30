@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
@@ -7,7 +6,6 @@ using StardewModdingAPI.Utilities;
 using StardewValley;
 using StardewValley.Menus;
 using StardewValley.Tools;
-using SObject = StardewValley.Object;
 
 namespace GrandfatherGiftRemade
 {
@@ -37,8 +35,6 @@ namespace GrandfatherGiftRemade
         private ModConfig Config;
         private SDate triggerDate;
         private bool abortMod = false;
-        private IModHelper helper;
-        private IModEvents events;
 
         /***** Publique Methodes *****/
         public bool CanEdit<T>(IAssetInfo asset)
@@ -61,13 +57,9 @@ namespace GrandfatherGiftRemade
 
         public override void Entry(IModHelper helper)
         {
-            this.helper = helper;
-            this.events = helper.Events;
-
             this.Config = helper.ReadConfig<ModConfig>();
 
             this.PrepTrigger();
-            this.PrepGoodies();
             this.RegisterEvents("Mod Startup");
         }
 
@@ -85,11 +77,6 @@ namespace GrandfatherGiftRemade
 
         /***** Private Methodes *****/
 
-        private void PrepGoodies()
-        {
-            // TODO: Create custom weapon here
-        }
-
         private void traceLoggingIf(string message)
         {
             if (this.Config.traceLogging) this.Monitor.Log(message, LogLevel.Trace);
@@ -97,15 +84,17 @@ namespace GrandfatherGiftRemade
 
         private void RegisterEvents(string reason)
         {
-            this.events.GameLoop.OneSecondUpdateTicked += this.Supervisor;
-            this.events.GameLoop.DayStarted += this.OnDayStarted;
+            var evtLoop = this.Helper.Events.GameLoop;
+            evtLoop.OneSecondUpdateTicked += this.Supervisor;
+            evtLoop.DayStarted += this.OnDayStarted;
             this.Monitor.Log($"Events registered: {reason}");
         }
 
         private void DeregisterEvents(string reason)
         {
-            this.events.GameLoop.OneSecondUpdateTicked -= this.Supervisor;
-            this.events.GameLoop.DayStarted -= this.OnDayStarted;
+            var evtLoop = this.Helper.Events.GameLoop;
+            evtLoop.OneSecondUpdateTicked -= this.Supervisor;
+            evtLoop.DayStarted -= this.OnDayStarted;
             this.Monitor.Log($"Events deregistered: {reason}");
         }
 
