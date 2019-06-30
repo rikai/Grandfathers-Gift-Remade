@@ -16,12 +16,14 @@ namespace GrandfatherGiftRemade
         public int triggerDate { get; set; }
         public bool giveChest { get; set; }
         public bool traceLogging { get; set; }
+        public string weaponStats { get; set; }
 
         public ModConfig()
         {
             this.triggerDate = 2;
             this.giveChest = true;
             this.traceLogging = true;
+            this.weaponStats = "3/5/.5/0/5/0/1/-1/-1/0/.20/3";
         }
     }
 
@@ -30,7 +32,6 @@ namespace GrandfatherGiftRemade
     {
         /***** Constants *****/
         const int WEAP_ID = 20;
-        const string WEAP_DATA = "Elf Blade/Only the nimble hands of an elf could craft this./3/5/.5/0/5/0/1/-1/-1/0/.20/3";
 
         /***** Properteze *****/
         private ModConfig Config;
@@ -50,8 +51,12 @@ namespace GrandfatherGiftRemade
         {
             if (!asset.AssetNameEquals("Data/weapons")) return;
             IDictionary<int, string> data = asset.AsDictionary<int, string>().Data;
-            data[WEAP_ID] = WEAP_DATA;
-            this.Monitor.Log($"weapon {WEAP_ID} set to {WEAP_DATA}");
+            string wName = this.Helper.Translation.Get("weapon.name");
+            string wDesc = this.Helper.Translation.Get("weapon.desc");
+            string wStat = this.Config.weaponStats;
+            string wData = $"{wName}/{wDesc}/{wStat}";
+            data[WEAP_ID] = wData;
+            this.Monitor.Log($"weapon {WEAP_ID} set to {wData}");
         }
 
         public override void Entry(IModHelper helper)
@@ -125,10 +130,7 @@ namespace GrandfatherGiftRemade
 
             this.DeregisterEvents("triggered");
 
-            string message = "Before you went to bed last night, you noticed a loose board.^^" +
-                "Too tired to pull it up you went to bed with the intention of checking " +
-                "what's underneath first thing in the morning.^^As you wake up, you pry open the loose " +
-                "board and found a wooden chest...^";
+            string message = this.Helper.Translation.Get("message1");
             pepoHelper.DialogOnBlack newDayMessage = new pepoHelper.DialogOnBlack(message);
             Game1.activeClickableMenu = newDayMessage;
 
@@ -150,7 +152,7 @@ namespace GrandfatherGiftRemade
 
         private void OnPackageOpen(object sender)
         {
-            string message = "Grandfather's message";
+            string message = this.Helper.Translation.Get("message2");
             LetterViewerMenu letter = new LetterViewerMenu(message);
             Game1.activeClickableMenu = letter;
 
