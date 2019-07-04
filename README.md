@@ -4,12 +4,17 @@ This mod is directly inspired by [Grandfather's Gift 1.0 on NexusMods](https://w
 
 Only the ideas remain; the code, the logic, even the words, everything came from my diabolical mind (with great help from my friends at [The Stardew Valley Forums](https://community.playstarbound.com/forums/mods.215/)).
 
+This mod has been released [**on NexusMods**](https://www.nexusmods.com/stardewvalley/mods/4151)
+
 ## Configuration
 
-I put in some knobs to fine tune the experience:
+I put in some `config.json` knobs to fine tune the experience:
 
-* `triggerDate` the day when the mod will trigger. Only the day is settable; the season is always "spring" and the year is always "1". Also, valid range is `2 <= triggerDate <= 28`; outside that range, the value will be clamped
-* `giveChest` whether farmer will receive a FREE CHEST!!1! upon opening the gift, or just the weapon
+| Knob        | Purpose |
+|-------------|---------|
+|`traceLogging` | Set to `false` if you think the TRACE logging is too chatty, making it difficult to troubleshoot other mods |
+|`triggerDay`   | The day when the mod will trigger. Limited to `2<=day<=28`. Season & year are locked to "spring" and 1, respectively |
+|`weaponStats`  | You can modify the Elf Dagger stats here. Won't affect other weapons and/or events because, by default, you can NOT get the Elf Dagger |
 
 ## Discussion?
 
