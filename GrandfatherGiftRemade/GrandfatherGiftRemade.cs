@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
@@ -8,19 +9,20 @@ using StardewValley.Tools;
 using StardewValley.Objects;
 using pepoHelper;
 
-namespace GrandfatherGiftRemade
+namespace GrandfatherGiftRemadeMod
 {
-    class ModConfig
-    {
+    class ModConfig {
         public int triggerDay { get; set; }
         public bool traceLogging { get; set; }
         public string weaponStats { get; set; }
+        public bool directToChest { get; set; }
 
         public ModConfig()
         {
-            this.triggerDay = 2;
-            this.traceLogging = true;
-            this.weaponStats = "3/5/.5/0/5/0/1/-1/-1/0/.20/3";
+            triggerDay = 2;
+            traceLogging = true;
+            weaponStats = "3/5/.5/0/5/0/1/-1/-1/0/.20/3";
+            directToChest = false;
         }
     }
 
@@ -33,42 +35,50 @@ namespace GrandfatherGiftRemade
         /***** Properteze *****/
         private ModConfig Config;
         private SDate triggerDate;
-        private bool abortMod = false;
 
         private string letterGrandpaMessage;
         private string narrationMessage1;
         private string narrationMessage2;
+        private string inventoryFullMessage;
+
+        private Farmer farmer;
+        private MeleeWeapon weapon;
 
         /***** Publique Methodes *****/
-        public bool CanEdit<T>(IAssetInfo asset)
+        public bool CanEdit<T>(IAssetInfo asset)  // implements IAssetEditor.CanEdit<T>
         {
+            if (asset == null) return false;
             if (asset.AssetNameEquals("Data/weapons")) return true;
             return false;
         }
 
-        public void Edit<T>(IAssetData asset)
+        public void Edit<T>(IAssetData asset)  // implements IAssetEditor.Edit<T>
         {
+            if (asset == null) return;
             if (!asset.AssetNameEquals("Data/weapons")) return;
             IDictionary<int, string> data = asset.AsDictionary<int, string>().Data;
-            string wName = this.Helper.Translation.Get("weapon.name");
-            string wDesc = this.Helper.Translation.Get("weapon.desc");
-            string wStat = this.Config.weaponStats;
+            string wName = Helper.Translation.Get("weapon.name");
+            string wDesc = Helper.Translation.Get("weapon.desc");
+            string wStat = Config.weaponStats;
             string wData = $"{wName}/{wDesc}/{wStat}";
             data[WEAP_ID] = wData;
-            this.Log($"weapon {WEAP_ID} set to {wData}");
+            Log($"weapon {WEAP_ID} set to {wData}");
         }
 
         public override void Entry(IModHelper helper)
         {
-            this.Config = helper.ReadConfig<ModConfig>();
-            if (!this.Config.traceLogging)
-                this.Monitor.Log("WARNING: Trace logging disabled via config.json", LogLevel.Warn);
+            if (helper == null) throw new ArgumentNullException(nameof(helper), "IModHelper object cannot be null!");
+            Config = helper.ReadConfig<ModConfig>();
+            if (!Config.traceLogging)
+                Monitor.Log("WARNING: Trace logging disabled via config.json", LogLevel.Warn);
             else
-                pepoCommon.monitor = this.Monitor;
+                pepoCommon.monitor = Monitor;
 
-            this.PrepTrigger();
-            this.PrepTranslations();
-            this.RegisterEvents("Mod Startup");
+            PrepTrigger();
+            PrepTranslations();
+
+            Helper.Events.GameLoop.DayStarted += OnDayStarted;
+            Log($"registered for DayStarted event");
         }
 
 
@@ -76,115 +86,103 @@ namespace GrandfatherGiftRemade
 
         private void PrepTrigger()
         {
-            int triggerDateDay = this.Config.triggerDay;
+            int triggerDateDay = Config.triggerDay;
             if (triggerDateDay < 2) triggerDateDay = 2;
             else if (triggerDateDay > 28) triggerDateDay = 28;
             SDate tD = new SDate(triggerDateDay, "spring", 1);
             //SDate tD = new SDate(25, "spring", 3);
-            this.Log($"triggerDate set to {tD.Day} {tD.Season} {tD.Year}", LogLevel.Info);
-            this.triggerDate = tD;
+            Log($"triggerDate set to {tD.Day} {tD.Season} {tD.Year}", LogLevel.Info);
+            triggerDate = tD;
         }
 
         private void PrepTranslations()
         {
-            string s;
+            var tran = Helper.Translation;
 
-            s = this.Helper.Translation.Get("letter");
-            this.letterGrandpaMessage = s;
-            this.Log($"loaded Grandpa's Letter from i18n, {s.Length} chars");
+            string tran_get(string item, string desc = null) {
+                string s = tran.Get(item);
+                string d = desc ?? item;
+                Log($"loaded {d} from i18n, {s.Length} chars");
+                return s;
+            }
 
-            s = this.Helper.Translation.Get("narration1");
-            this.narrationMessage1 = s;
-            this.Log($"loaded Narration1 from i18n, {s.Length} chars");
-
-            s = this.Helper.Translation.Get("narration2");
-            this.narrationMessage2 = s;
-            this.Log($"loaded Narration2 from i18n, {s.Length} chars");
+            letterGrandpaMessage = tran_get("letter", "Grandpa's Letter");
+            narrationMessage1 = tran_get("narration1", "Narration p1");
+            narrationMessage2 = tran_get("narration2", "Narration p2");
+            inventoryFullMessage = tran_get("full_inventory", "Inventory Full Message");
         }
 
         private void Log(string message, LogLevel level=LogLevel.Debug)
         {
-            if (!this.Config.traceLogging && level == LogLevel.Trace) return;
-            this.Monitor.Log(message, level);
+            if (!Config.traceLogging && level == LogLevel.Trace) return;
+            Monitor.Log(message, level);
         }
 
-        private void RegisterEvents(string reason)
-        {
-            var evtLoop = this.Helper.Events.GameLoop;
-            evtLoop.OneSecondUpdateTicked += this.Supervisor;
-            evtLoop.DayStarted += this.OnDayStarted;
-            this.Log($"Events registered: {reason}");
-        }
+        private delegate void ExitFunction();
 
-        private void DeregisterEvents(string reason)
-        {
-            var evtLoop = this.Helper.Events.GameLoop;
-            evtLoop.OneSecondUpdateTicked -= this.Supervisor;
-            evtLoop.DayStarted -= this.OnDayStarted;
-            this.Log($"Events deregistered: {reason}");
-        }
-
-        private void Supervisor(object sender, OneSecondUpdateTickedEventArgs e)
-        {
-            if (this.abortMod) this.DeregisterEvents("ABORTING MOD");
-        }
-
-        private void OnDayStarted(object sender, DayStartedEventArgs e)
-        {
+        private void OnDayStarted(object sender, DayStartedEventArgs e) {
             var curDate = SDate.Now();
-            if (curDate != triggerDate)
-            {
-                this.Log("new day, but not our day", LogLevel.Trace);
+            if(curDate != triggerDate) {
+                Log($"new day {curDate.ToString()}, but not our day", LogLevel.Debug);
+                return;
+            }
+            Log($"new day {curDate.ToString()}, our day", LogLevel.Debug);
+
+            farmer = Game1.player;
+            weapon = new MeleeWeapon(WEAP_ID);
+
+            IClickableMenu narrationDayStart1 =
+                new pepoHelper.DialogOnBlack(narrationMessage1) {
+                    exitFunction = () => { Game1.globalFadeToBlack(); }
+                };
+            IClickableMenu narrationDayStart2 =
+                new pepoHelper.DialogOnBlack(narrationMessage2);
+            IClickableMenu letterGrandpa =
+                new LetterViewerMenu(letterGrandpaMessage.Replace("@", farmer.Name)) {
+                    exitFunction = spawnChestWeapon
+                };
+            Log("built the menus", LogLevel.Trace);
+
+            // Make a chain of menus
+            pepoHelper.MenuChainer menuChain = new pepoHelper.MenuChainer();
+            menuChain.Add(narrationDayStart1, narrationDayStart2, letterGrandpa);
+            Log("chained the menus", LogLevel.Trace);
+            menuChain.Start(Helper.Events.Display);
+            Log("displayed DayStart narration1, continuing doing things in the background");
+
+            // Shift farmer to the left to leave the bed
+            farmer.moveRelTiles(h: -2, faceDir: 3);
+            Log("moved farmer out of bed", LogLevel.Trace);
+        }
+
+        private void spawnChestWeapon() { 
+
+            // Drop a chest containing weapon (this will be hidden by DialogOnBlack)
+            Chest chest = new Chest(true);  // must be "true" or chest won't appear
+            Log("created Chest(true)", LogLevel.Trace);
+            chest.playerChoiceColor.Set(Microsoft.Xna.Framework.Color.Gold);
+            chest.Tint = Microsoft.Xna.Framework.Color.Gold;
+            Game1.currentLocation.setObject(farmer.relTiles(h: -1), chest);
+            Log("dropped chest in front of farmer", LogLevel.Trace);
+
+            if(Config.directToChest) {
+                chest.addItem(weapon);
+                Log("inserted weapon into chest", LogLevel.Trace);
                 return;
             }
 
-            Farmer farmer = Game1.player;
-            MeleeWeapon weapon = new MeleeWeapon(WEAP_ID);
-
-            IDisplayEvents dispEvents = this.Helper.Events.Display;
-
-            IClickableMenu narrationDayStart1 =
-                new pepoHelper.DialogOnBlack(this.narrationMessage1);
-            IClickableMenu narrationDayStart2 =
-                new pepoHelper.DialogOnBlack(this.narrationMessage2);
-            IClickableMenu letterGrandpa =
-                new LetterViewerMenu(this.letterGrandpaMessage.Replace("@", farmer.Name));
-            this.Log("built the menus", LogLevel.Trace);
-
-            // Make some chains
-            narrationDayStart1.exitFunction = () => Game1.activeClickableMenu = narrationDayStart2;
-            narrationDayStart2.exitFunction = () => Game1.activeClickableMenu = letterGrandpa;
-            letterGrandpa.exitFunction = () => {
-                dispEvents.MenuChanged -= pepoHandler.ClosedMenu;
-                this.Log("deregistered from MenuChanged events");
-                farmer.holdUpItemThenMessage(weapon);
-                };
-            this.Log("chained the menus", LogLevel.Trace);
-
-            // Activate the ClosedMenu handler that actually do the chaining
-            dispEvents.MenuChanged += pepoHandler.ClosedMenu;
-            this.Log("registered for MenuChanged events");
-
-            // Narration about what happened last night segues to Letter from Grandpa
-            Game1.activeClickableMenu = narrationDayStart1;
-            this.Log("displayed DayStart narration1, continuing doing things in the background");
-
-            // Shift farmer to the left to leave the bed
-            farmer.moveRelTiles(h: -2);
-            farmer.faceDirection(3);  // face left
-            this.Log("moved farmer out of bed", LogLevel.Trace);
-
-            // Drop a chest containing weapon (this will be hidden by DialogOnBlack)
-            Chest chest = new Chest(true);
-            this.Log("created Chest(true)", LogLevel.Trace);
-            chest.addItem(weapon);
-            this.Log($"inserted weapon into chest", LogLevel.Trace);
-            Game1.getLocationFromName(farmer.currentLocation.Name).dropObject(
-                obj: chest,
-                dropLocation: farmer.relTiles(h: -1) * Game1.tileSize,
-                viewport: Game1.viewport,
-                initialPlacement: true);
-            this.Log("dropped chest in front of farmer", LogLevel.Trace);
+            farmer.holdUpItemThenMessage(weapon);
+            if(farmer.isInventoryFull()) {
+                // TODO: Figure out how to wait out the message above before creating a HUDMessage
+                // Game1.addHUDMessage(new HUDMessage(inventoryFullMessage, 2));
+                chest.addItem(weapon);
+                Log("inserted weapon into chest", LogLevel.Trace);
+            }
+            else {
+                farmer.addItemToInventory(weapon);
+                Log("inserted weapon into inventory", LogLevel.Trace);
+            }
+            return;
 
             // TODO: Instead of a simple chest, make a chest with interaction
             // TODO: Interaction with chest = Farmer lift weapon above head + chimes
