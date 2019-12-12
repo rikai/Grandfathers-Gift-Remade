@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StardewValley;
@@ -85,15 +86,17 @@ namespace pepoHelper
             const int TEXTURE_SIZE = 16;
             const uint TEXTURE_DATA_ARGB = 0xffffffff;
             Rectangle target = new Rectangle(0, 0, Game1.viewport.Width, Game1.viewport.Height);
-            Texture2D flatblank = new Texture2D(Game1.graphics.GraphicsDevice, TEXTURE_SIZE, TEXTURE_SIZE);
-            uint[] data = new uint[TEXTURE_SIZE * TEXTURE_SIZE];
-            for (int i = 0; i < data.Length; i++)
-            {
-                data[i] = TEXTURE_DATA_ARGB;
+            using (
+                Texture2D flatblank = new Texture2D(Game1.graphics.GraphicsDevice, TEXTURE_SIZE, TEXTURE_SIZE)
+                ) {
+                uint[] data = new uint[TEXTURE_SIZE * TEXTURE_SIZE];
+                for (int i = 0; i < data.Length; i++) {
+                    data[i] = TEXTURE_DATA_ARGB;
+                }
+                flatblank.SetData<uint>(data);
+                Color black = new Color(0, 0, 0);
+                b.Draw(flatblank, target, black);
             }
-            flatblank.SetData<uint>(data);
-            Color black = new Color(0, 0, 0);
-            b.Draw(flatblank, target, black);
         }
     }
 
@@ -112,33 +115,86 @@ namespace pepoHelper
 
     public static class FarmerExtension
     {
-        public static void moveRelTiles(this Farmer f, int h=0, int v=0)
+        public static void moveRelTiles(this Farmer f, int h=0, int v=0, int faceDir=-1)
         {
+            if(f == null) throw new ArgumentNullException(nameof(f), "Farmer object cannot be null!");
             pepoCommon.LogTr($"farmer was at ({f.getTileX()},{f.getTileY()})");
             f.setTileLocation(f.relTiles(h: h, v: v));
             pepoCommon.LogTr($"farmer now at ({f.getTileX()},{f.getTileY()})");
+            if (faceDir != -1) f.faceDirection(faceDir);
         }
 
         public static Vector2 relTiles(this Farmer f, int h=0, int v=0)
         {
+            if(f == null) throw new ArgumentNullException(nameof(f), "Farmer object cannot be null!");
             return new Vector2(f.getTileX() + h, f.getTileY() + v);
         }
+
     }
 
-
-    public static class pepoHandler
+    public class MenuChainer
     {
-        public static void ClosedMenu(object sender, MenuChangedEventArgs e)
+        public List<IClickableMenu> menus { get; } = new List<IClickableMenu> { };
+        public IDisplayEvents dispEvt { get; set; } = null;
+        public bool chainBegun {
+            get { return _chainBegun; }
+        }
+        public bool menuCleared {
+            get { return _menuCleared; }
+        }
+
+        private bool _chainBegun = false;
+        private bool _menuCleared = false;
+
+        public MenuChainer() { }
+
+        public void Start(IDisplayEvents displayEvents)
         {
-            pepoCommon.LogTr($"ClosedMenu triggered by {sender}");
-            if (e.OldMenu == null)
-            {
-                pepoCommon.LogTr($"new menu {e.NewMenu}");
+            if (displayEvents == null) throw new ArgumentNullException(nameof(displayEvents), "IDisplayEvents cannot be null!");
+            _chainBegun = true;
+            _menuCleared = false;
+            pepoCommon.LogTr("starting menuchain");
+            (dispEvt = displayEvents).MenuChanged += OnMenuChanged;
+            pepoCommon.LogTr("registered for MenuChanged event");
+            var first = menus[0];
+            Game1.activeClickableMenu = first;
+            pepoCommon.LogTr($"displayed first menu {first}");
+        }
+
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification = "<Pending>")]
+        public void OnMenuChanged(object sender, MenuChangedEventArgs e)
+        {
+            if (e.OldMenu == null) {
+                pepoCommon.LogTr($"MenuChanged e.NewMenu = {e.NewMenu}; ignoring");
                 return;
             }
-            pepoCommon.LogTr($"old menu {e.OldMenu}");
-            pepoCommon.LogTr("calling exitFunction");
-            e.OldMenu.exitFunction();
+            pepoCommon.LogTr($"MenuChanged e.OldMenu = {e.OldMenu}");
+            pepoCommon.LogTr($"invoking {e.OldMenu} exitFunction, if any");
+            e.OldMenu.exitFunction?.Invoke();
+            menus.Remove(e.OldMenu);
+            if (menus.Count > 0)
+            {
+                pepoCommon.LogTr($"still have {menus.Count} menu(s) in chain");
+                var next = menus[0];
+                Game1.activeClickableMenu = next;
+                pepoCommon.LogTr($"displayed next menu {next}");
+            }
+            else
+            {
+                pepoCommon.LogTr($"no more menus in chain");
+                dispEvt.MenuChanged -= OnMenuChanged;
+                pepoCommon.LogTr("deregistered from MenuChanged event");
+                _chainBegun = false;
+                pepoCommon.LogTr("indicate menu chain has ended");
+                _menuCleared = true;
+                pepoCommon.LogTr("indicate last menu has been cleared");
+            }
+        }
+        public void Add(params IClickableMenu[] menuParams)
+        {
+            pepoCommon.LogTr($"adding {menuParams.Length} menus");
+            menus.AddRange(menuParams);
+            pepoCommon.LogTr($"now we have {menus.Count} menus");
         }
     }
 
