@@ -135,15 +135,13 @@ namespace pepoHelper
 
     public class MenuChainer
     {
+        /* Properties Publique */
         public List<IClickableMenu> menus { get; } = new List<IClickableMenu> { };
         public IDisplayEvents dispEvt { get; set; } = null;
-        public bool chainBegun {
-            get { return _chainBegun; }
-        }
-        public bool menuCleared {
-            get { return _menuCleared; }
-        }
+        public bool chainBegun { get { return _chainBegun; } }
+        public bool menuCleared { get { return _menuCleared; } }
 
+        /* Internal thingies */
         private bool _chainBegun = false;
         private bool _menuCleared = false;
 
@@ -151,7 +149,7 @@ namespace pepoHelper
 
         public void Start(IDisplayEvents displayEvents)
         {
-            if (displayEvents == null) throw new ArgumentNullException(nameof(displayEvents), "IDisplayEvents cannot be null!");
+            if (displayEvents == null) throw new ArgumentNullException(nameof(displayEvents));
             _chainBegun = true;
             _menuCleared = false;
             pepoCommon.LogTr("starting menuchain");
@@ -162,7 +160,10 @@ namespace pepoHelper
             pepoCommon.LogTr($"displayed first menu {first}");
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification = "<Pending>")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage(
+            "Design", "CA1062:Validate arguments of public methods",
+            Justification = "This is an event; it's unpossible for any of the args to be null"
+            )]
         public void OnMenuChanged(object sender, MenuChangedEventArgs e)
         {
             if (e.OldMenu == null) {
