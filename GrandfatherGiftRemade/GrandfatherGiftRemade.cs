@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading;
+using System.Globalization;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
@@ -31,6 +33,8 @@ namespace GrandfatherGiftRemadeMod
     {
         /***** Constants *****/
         const int WEAP_ID = 20;
+        const int HOLDUP_MSG_DLY = 2000;
+        private readonly CultureInfo CULTURE = CultureInfo.InvariantCulture;
 
         /***** Properteze *****/
         private ModConfig Config;
@@ -67,7 +71,7 @@ namespace GrandfatherGiftRemadeMod
 
         public override void Entry(IModHelper helper)
         {
-            if (helper == null) throw new ArgumentNullException(nameof(helper), "IModHelper object cannot be null!");
+            if (helper == null) throw new ArgumentNullException(nameof(helper));
             Config = helper.ReadConfig<ModConfig>();
             if (!Config.traceLogging)
                 Monitor.Log("WARNING: Trace logging disabled via config.json", LogLevel.Warn);
@@ -90,7 +94,6 @@ namespace GrandfatherGiftRemadeMod
             if (triggerDateDay < 2) triggerDateDay = 2;
             else if (triggerDateDay > 28) triggerDateDay = 28;
             SDate tD = new SDate(triggerDateDay, "spring", 1);
-            //SDate tD = new SDate(25, "spring", 3);
             Log($"triggerDate set to {tD.Day} {tD.Season} {tD.Year}", LogLevel.Info);
             triggerDate = tD;
         }
@@ -157,7 +160,7 @@ namespace GrandfatherGiftRemadeMod
 
         private void spawnChestWeapon() { 
 
-            // Drop a chest containing weapon (this will be hidden by DialogOnBlack)
+            // Drop a chest
             Chest chest = new Chest(true);  // must be "true" or chest won't appear
             Log("created Chest(true)", LogLevel.Trace);
             chest.playerChoiceColor.Set(Microsoft.Xna.Framework.Color.Gold);
@@ -165,7 +168,9 @@ namespace GrandfatherGiftRemadeMod
             Game1.currentLocation.setObject(farmer.relTiles(h: -1), chest);
             Log("dropped chest in front of farmer", LogLevel.Trace);
 
-            if(Config.directToChest) {
+            Log($"directToChest == {Config.directToChest.ToString(CULTURE)}", LogLevel.Trace);
+
+            if (Config.directToChest) {
                 chest.addItem(weapon);
                 Log("inserted weapon into chest", LogLevel.Trace);
                 return;
