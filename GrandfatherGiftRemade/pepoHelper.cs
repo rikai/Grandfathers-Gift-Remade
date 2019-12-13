@@ -77,6 +77,10 @@ namespace pepoHelper
             return;
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage(
+            "Reliability", "CA2000:Dispose objects before losing scope",
+            Justification = "The main game thread requires the Texture2D object to not auto-dispose"
+            )]
         public static void BlackScreen(SpriteBatch b = null)
         {
             if (b != null) pepoCommon.spriteBatch = b;
@@ -86,17 +90,14 @@ namespace pepoHelper
             const int TEXTURE_SIZE = 16;
             const uint TEXTURE_DATA_ARGB = 0xffffffff;
             Rectangle target = new Rectangle(0, 0, Game1.viewport.Width, Game1.viewport.Height);
-            using (
-                Texture2D flatblank = new Texture2D(Game1.graphics.GraphicsDevice, TEXTURE_SIZE, TEXTURE_SIZE)
-                ) {
-                uint[] data = new uint[TEXTURE_SIZE * TEXTURE_SIZE];
-                for (int i = 0; i < data.Length; i++) {
-                    data[i] = TEXTURE_DATA_ARGB;
-                }
-                flatblank.SetData<uint>(data);
-                Color black = new Color(0, 0, 0);
-                b.Draw(flatblank, target, black);
+            Texture2D flatblank = new Texture2D(Game1.graphics.GraphicsDevice, TEXTURE_SIZE, TEXTURE_SIZE);
+            uint[] data = new uint[TEXTURE_SIZE * TEXTURE_SIZE];
+            for (int i = 0; i < data.Length; i++) {
+                data[i] = TEXTURE_DATA_ARGB;
             }
+            flatblank.SetData<uint>(data);
+            Color black = new Color(0, 0, 0);
+            b.Draw(flatblank, target, black);
         }
     }
 
