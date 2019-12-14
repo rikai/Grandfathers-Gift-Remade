@@ -33,7 +33,7 @@ namespace GrandfatherGiftRemadeMod
     {
         /***** Constants *****/
         const int WEAP_ID = 20;
-        const int HOLDUP_MSG_DLY = 2000;
+        // const int HOLDUP_MSG_DLY = 2000;
         private readonly CultureInfo CULTURE = CultureInfo.InvariantCulture;
 
         /***** Properteze *****/
@@ -47,6 +47,9 @@ namespace GrandfatherGiftRemadeMod
 
         private Farmer farmer;
         private MeleeWeapon weapon;
+
+        private bool newDayInfo = true;
+        private bool stillRunning = true;
 
         /***** Publique Methodes *****/
         public bool CanEdit<T>(IAssetInfo asset)  // implements IAssetEditor.CanEdit<T>
@@ -66,7 +69,7 @@ namespace GrandfatherGiftRemadeMod
             string wStat = Config.weaponStats;
             string wData = $"{wName}/{wDesc}/{wStat}";
             data[WEAP_ID] = wData;
-            Log($"weapon {WEAP_ID} set to {wData}");
+            Log($"weapon {WEAP_ID} set to {wData}", LogLevel.Info);
         }
 
         public override void Entry(IModHelper helper)
@@ -124,12 +127,16 @@ namespace GrandfatherGiftRemadeMod
         private delegate void ExitFunction();
 
         private void OnDayStarted(object sender, DayStartedEventArgs e) {
+            if (!stillRunning) return;
+
             var curDate = SDate.Now();
-            if(curDate != triggerDate) {
-                Log($"new day {curDate.ToString()}, but not our day", LogLevel.Debug);
+            if (curDate != triggerDate) {
+                if (newDayInfo)
+                    Log($"new day {curDate.ToString()}, but not our day", LogLevel.Debug);
                 return;
             }
             Log($"new day {curDate.ToString()}, our day", LogLevel.Debug);
+            stillRunning = false;
 
             farmer = Game1.player;
             weapon = new MeleeWeapon(WEAP_ID);
