@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StardewValley;
@@ -20,57 +21,69 @@ namespace pepoHelper
         }
     }
 
+    /// <summary>
+    /// Some static methods to help draw things on screen
+    /// </summary>
     static class pepoDrawer
     {
+        public static int MaxCharWidth(this Rectangle area, SpriteFont font, string c = "!") {
+            // Used to pre-allocate StringBuilder size to 4 * max possible number of chars in a line
+            // the "4" constant allows unicode chars.
+            return 4 * area.X / (int)Math.Ceiling(font.MeasureString(c).X);
+        }
+
+        public static float LineHeight(this SpriteFont font, int lineHeightPercent = 100) {
+            // "M" is the boxiest letter: tallest and widest.
+            return font.MeasureString("M").Y * lineHeightPercent / 100.0f;
+        }
+
         public static void MultilineString(
-            SpriteFont font, string message, Rectangle area, SpriteBatch b = null)
-        {
+            SpriteFont font, string message, Rectangle area,
+            int lineHeightPercent = 110, SpriteBatch b = null)
+            {
             if (b != null) pepoCommon.spriteBatch = b;
             b = pepoCommon.spriteBatch;
-            String todoStr = message;
-            float lineHeight = Game1.dialogueFont.MeasureString("M").Y;
+            float lineHeight = font.LineHeight(lineHeightPercent);
 
             Vector2 curPos = new Vector2(area.X, area.Y);
-            String workStr = "";
-            String prevStr = "";
-            for (int i = 0; i < todoStr.Length; i++)
-            {
-                prevStr = workStr;
-                workStr += todoStr[i];
-                if (Game1.dialogueFont.MeasureString(workStr).X > area.Width)
-                {
-                    b.DrawString(font, prevStr, curPos, Color.Black);
+            StringBuilder workSB = new StringBuilder(area.MaxCharWidth(font));
+            foreach (char c in message) {
+                workSB.Append(c);
+                if (font.MeasureString(workSB).X > area.Width) {
+                    // remove last character, from https://stackoverflow.com/a/17215160/149900
+                    workSB.Length--;
+                    b.DrawString(font, workSB, curPos, Color.Black);
                     curPos.Y += lineHeight;
-                    workStr = todoStr.Substring(i, 1);
+                    workSB.Clear();
+                    workSB.Append(c);
                 }
             }
-            b.DrawString(font, workStr, curPos, Color.Black);
+            b.DrawString(font, workSB, curPos, Color.Black);
             return;
         }
 
         public static void MultilineStringWithWordWrap(
             SpriteFont font, string message, Rectangle area,
             int lineHeightPercent = 110, SpriteBatch b = null)
-        {
+            {
             if (b != null) pepoCommon.spriteBatch = b;
             b = pepoCommon.spriteBatch;
-            string[] toDoStr = message.Split();
-            float factor = ((float)lineHeightPercent / (float)100.0);
-            // "M" is the boxiest letter: tallest and widest.
-            float lineHeight = font.MeasureString("M").Y * factor;
+            float lineHeight = font.LineHeight(lineHeightPercent);
 
             Vector2 curPos = new Vector2(area.X, area.Y);
-            String workStr = "";
-            String prevStr = "";
-            for (int i = 0; i < toDoStr.Length; i++)
+            StringBuilder workStr = new StringBuilder(area.MaxCharWidth(font));
+            foreach (string chunkStr in message.Split())
             {
-                prevStr = workStr;
-                workStr += " " + toDoStr[i];
+                workStr.Append(" ");
+                workStr.Append(chunkStr);
                 if (font.MeasureString(workStr).X > area.Width)
                 {
-                    b.DrawString(font, prevStr, curPos, Color.Black);
+                    workStr.Length -= chunkStr.Length;
+                    workStr.Length--;
+                    b.DrawString(font, workStr, curPos, Color.Black);
                     curPos.Y += lineHeight;
-                    workStr = toDoStr[i];
+                    workStr.Clear();
+                    workStr.Append(chunkStr);
                 }
             }
             b.DrawString(font, workStr, curPos, Color.Black);
@@ -101,6 +114,12 @@ namespace pepoHelper
         }
     }
 
+    /// <summary>
+    /// Draws a DialogueBox "menu" on top of a black background
+    /// </summary>
+    /// <remarks>
+    /// This is done by overriding the draw() method of the DialogueBox class
+    /// </remarks>
     internal class DialogOnBlack : DialogueBox
     {
         public DialogOnBlack(string dialog) : base(dialog)
@@ -114,8 +133,18 @@ namespace pepoHelper
         }
     }
 
+    /// <summary>
+    /// Some simple extension methods to the Farmer class for handling otherwise-too-verbose procedures
+    /// </summary>
     public static class FarmerExtension
     {
+        /// <summary>
+        /// Move Farmer by (h, v) tiles.
+        /// </summary>
+        /// <param name="f">The farmer object that will be extended</param>
+        /// <param name="h">Number of horizontal tiles to move. Positive = rightward</param>
+        /// <param name="v">Number of vertical tiles to move. Positive = downward</param>
+        /// <param name="faceDir">If specified, represents the final heading of the farmer. 1234 = R?L?</param>
         public static void moveRelTiles(this Farmer f, int h=0, int v=0, int faceDir=-1)
         {
             if(f == null) throw new ArgumentNullException(nameof(f), "Farmer object cannot be null!");
@@ -125,6 +154,13 @@ namespace pepoHelper
             if (faceDir != -1) f.faceDirection(faceDir);
         }
 
+        /// <summary>
+        /// Return the tile coordinate relative to the farmer
+        /// </summary>
+        /// <param name="f">The farmer object that will be extended</param>
+        /// <param name="h">Number of horizontal tiles relative to farmer. Positive = rightward</param>
+        /// <param name="v">Number of vertical tiles reletive to farmer. Positive = downward</param>
+        /// <returns>A Vector2 object containing the actual coordinates of the target tile</returns>
         public static Vector2 relTiles(this Farmer f, int h=0, int v=0)
         {
             if(f == null) throw new ArgumentNullException(nameof(f), "Farmer object cannot be null!");
@@ -133,10 +169,16 @@ namespace pepoHelper
 
     }
 
+    /// <summary>
+    /// Chains several "menus" so they appear one after another
+    /// </summary>
+    /// <remarks>
+    /// Use the Add() method to add the menus to chain.
+    /// </remarks>
     public class MenuChainer
     {
         /* Properties Publique */
-        public List<IClickableMenu> menus { get; } = new List<IClickableMenu> { };
+        public Queue<IClickableMenu> menus { get; } = new Queue<IClickableMenu> { };
         public IDisplayEvents dispEvt { get; set; } = null;
         public bool chainBegun { get { return _chainBegun; } }
         public bool menuCleared { get { return _menuCleared; } }
@@ -155,7 +197,7 @@ namespace pepoHelper
             pepoCommon.LogTr("starting menuchain");
             (dispEvt = displayEvents).MenuChanged += OnMenuChanged;
             pepoCommon.LogTr("registered for MenuChanged event");
-            var first = menus[0];
+            var first = menus.Dequeue();
             Game1.activeClickableMenu = first;
             pepoCommon.LogTr($"displayed first menu {first}");
         }
@@ -165,19 +207,27 @@ namespace pepoHelper
             Justification = "This is an event; it's unpossible for any of the args to be null"
             )]
         public void OnMenuChanged(object sender, MenuChangedEventArgs e)
+        // Remember: This event is triggered twice per menu; once when the menu is displayed,
+        // and once when the menu is dismissed.
         {
+            pepoCommon.LogTr($"MenuChanged e.NewMenu = {e.NewMenu}");
             if (e.OldMenu == null) {
-                pepoCommon.LogTr($"MenuChanged e.NewMenu = {e.NewMenu}; ignoring");
+                // if OldMenu == null, this is a newly-displayed menu. Do NOT change
+                // the active menu. Also, do NOT try to execute exitFunction.
+                pepoCommon.LogTr("No OldMenu, this is a newly-diplayed menu.");
                 return;
             }
             pepoCommon.LogTr($"MenuChanged e.OldMenu = {e.OldMenu}");
-            pepoCommon.LogTr($"invoking {e.OldMenu} exitFunction, if any");
+            pepoCommon.LogTr($"Trying to invoke {e.OldMenu} exitFunction, if any");
             e.OldMenu.exitFunction?.Invoke();
-            menus.Remove(e.OldMenu);
+            // the next line should no longer be necessary since we're using a Queue
+            // but I'm keeping the line here so I can still remember where to do this
+            // just in case we need to go back to using List<>
+            // menus.Remove(e.OldMenu);
             if (menus.Count > 0)
             {
                 pepoCommon.LogTr($"still have {menus.Count} menu(s) in chain");
-                var next = menus[0];
+                var next = menus.Dequeue();
                 Game1.activeClickableMenu = next;
                 pepoCommon.LogTr($"displayed next menu {next}");
             }
@@ -192,10 +242,20 @@ namespace pepoHelper
                 pepoCommon.LogTr("indicate last menu has been cleared");
             }
         }
-        public void Add(params IClickableMenu[] menuParams)
-        {
+
+        /// <summary>
+        /// Add a menu (object that implements IClickableMenu) to the chain
+        /// </summary>
+        /// <param name="menuParams">One or more menu objects</param>
+        /// <remarks>
+        /// This method uses the "params" keyword, so just enumerate the menu objects
+        /// as arguments to this method. DO NOT put them in a collection!
+        /// </remarks>
+        public void Add(params IClickableMenu[] menuParams) {
             pepoCommon.LogTr($"adding {menuParams.Length} menus");
-            menus.AddRange(menuParams);
+            foreach (IClickableMenu m in menuParams) {
+                menus.Enqueue(m);
+            }
             pepoCommon.LogTr($"now we have {menus.Count} menus");
         }
     }
