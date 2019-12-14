@@ -1,7 +1,7 @@
 {
   "Name": "Grandfather's Gift Remade",
   "Author": "pepoluan",
-  "Version": "1.2.4",
+  "Version": "1.2.4.1",
   "Description": "A remade of the Grandfather's Gift mod on NexusMods",
   "UniqueID": "pepoluan.GrandfatherGiftRemade",
   "EntryDll": "GrandfatherGiftRemade.dll",
@@ -16,6 +16,7 @@
     "1.2.1": "Fix crash due to too-early Dispose()",
     "1.2.2": "Remove some verbosity",
     "1.2.3": "Behind-the-scenes optimization",
-    "1.2.4": "Change weapon log to Info level; suppress warning of unused const"
+    "1.2.4": "Change weapon log to Info level; suppress warning of unused const",
+    "1.2.4.1":  "Revert skipping mod after triggered once because state is game-wide instead of per-save"
   }
 }
