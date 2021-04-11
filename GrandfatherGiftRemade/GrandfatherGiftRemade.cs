@@ -65,7 +65,7 @@ namespace GrandfatherGiftRemadeMod
             string wStat = Config.weaponStats;
             string wData = $"{wName}/{wDesc}/{wStat}";
             data[WEAP_ID] = wData;
-            Log($"weapon {WEAP_ID} set to {wData}", LogLevel.Info);
+            Log($"weapon {WEAP_ID} set to {wName} - {wDesc} - Stats: {wStat}!", LogLevel.Info);
         }
 
         public override void Entry(IModHelper helper)
