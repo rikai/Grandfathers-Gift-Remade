@@ -1,7 +1,7 @@
 {
   "Name": "Grandfather's Gift Remade",
   "Author": "pepoluan",
-  "Version": "1.2.5",
+  "Version": "1.3.0",
   "Description": "A remade of the Grandfather's Gift mod on NexusMods",
   "UniqueID": "pepoluan.GrandfatherGiftRemade",
   "EntryDll": "GrandfatherGiftRemade.dll",
@@ -17,6 +17,7 @@
     "1.2.2": "Remove some verbosity",
     "1.2.3": "Behind-the-scenes optimization",
     "1.2.4": "Change weapon log to Info level; suppress warning of unused const",
-    "1.2.5":  "Revert skipping mod after triggered once because state is game-wide instead of per-save"
+    "1.2.5": "Revert skipping mod after triggered once because state is game-wide instead of per-save",
+    "1.3.0": "Set positioning based on marriage state, code cleanup+modernization & Only trigger before set date."
   }
 }
