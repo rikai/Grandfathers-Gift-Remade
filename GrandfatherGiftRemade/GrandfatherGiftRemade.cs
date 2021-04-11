@@ -152,9 +152,19 @@ namespace GrandfatherGiftRemadeMod
             menuChain.Start(Helper.Events.Display);
             Log("displayed DayStart narration1, continuing doing things in the background");
 
-            // Shift farmer to the left to leave the bed
-            farmer.moveRelTiles(h: -2, faceDir: 3);
-            Log("moved farmer out of bed", LogLevel.Trace);
+            // Shift farmer to the left to leave the bed, location dependent on marriage status.
+            
+            if (farmer.isMarried())
+            {
+                farmer.moveRelTiles(h: -1, faceDir: 2);
+                Log("Farmer is married. Moved farmer out of spouse bed", LogLevel.Trace);
+                return;
+            }
+            else
+            {
+                farmer.moveRelTiles(h: -2, faceDir: 3);
+                Log("Farmer is not married. Moved farmer out of single bed.", LogLevel.Trace);
+            }
         }
 
         private void spawnChestWeapon() { 
