@@ -12,7 +12,7 @@ namespace pepoHelper
 {
     static class pepoCommon
     {
-        public static IMonitor monitor = null;
+        public static IMonitor monitor;
         public static SpriteBatch spriteBatch;
 
         public static void LogTr(string message)
@@ -74,7 +74,7 @@ namespace pepoHelper
             StringBuilder workStr = new StringBuilder(area.MaxCharWidth(font));
             foreach (string chunkStr in message.Split())
             {
-                workStr.Append(" ");
+                workStr.Append(' ');
                 workStr.Append(chunkStr);
                 if (font.MeasureString(workStr).X > area.Width)
                 {
@@ -179,13 +179,13 @@ namespace pepoHelper
     {
         /* Properties Publique */
         public Queue<IClickableMenu> menus { get; } = new Queue<IClickableMenu> { };
-        public IDisplayEvents dispEvt { get; set; } = null;
+        public IDisplayEvents dispEvt { get; set; }
         public bool chainBegun { get { return _chainBegun; } }
         public bool menuCleared { get { return _menuCleared; } }
 
         /* Internal thingies */
-        private bool _chainBegun = false;
-        private bool _menuCleared = false;
+        private bool _chainBegun;
+        private bool _menuCleared;
 
         public MenuChainer() { }
 
@@ -252,6 +252,10 @@ namespace pepoHelper
         /// as arguments to this method. DO NOT put them in a collection!
         /// </remarks>
         public void Add(params IClickableMenu[] menuParams) {
+            if (menuParams == null)
+            {
+                throw new ArgumentNullException(nameof(menuParams));
+            }
             pepoCommon.LogTr($"adding {menuParams.Length} menus");
             foreach (IClickableMenu m in menuParams) {
                 menus.Enqueue(m);
