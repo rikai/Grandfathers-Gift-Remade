@@ -167,14 +167,25 @@ namespace GrandfatherGiftRemadeMod
             }
         }
 
-        private void spawnChestWeapon() { 
+        private void spawnChestWeapon() {
+            var cloc = Game1.currentLocation;
 
             // Drop a chest
             Chest chest = new Chest(true);  // must be "true" or chest won't appear
             Log("created Chest(true)", LogLevel.Trace);
             chest.playerChoiceColor.Set(Microsoft.Xna.Framework.Color.Gold);
             chest.Tint = Microsoft.Xna.Framework.Color.Gold;
-            Game1.currentLocation.setObject(farmer.relTiles(h: -1), chest);
+            if (farmer.isMarried())
+            {
+                cloc.setObject(farmer.relTiles(v: 1), chest); 
+                Log("Farmer is in love. Chest placed below", LogLevel.Trace);
+                return;
+            }
+            else
+            {
+                cloc.setObject(farmer.relTiles(h: -1), chest);
+                Log("Farmer is alone. Chest placed to the left.", LogLevel.Trace);
+            }
             Log("dropped chest in front of farmer", LogLevel.Trace);
 
             Log($"directToChest == {Config.directToChest.ToString(CULTURE)}", LogLevel.Trace);
