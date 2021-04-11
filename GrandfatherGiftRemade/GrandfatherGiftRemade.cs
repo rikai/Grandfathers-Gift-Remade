@@ -124,7 +124,7 @@ namespace GrandfatherGiftRemadeMod
 
         private void OnDayStarted(object sender, DayStartedEventArgs e) {
             var curDate = SDate.Now();
-            if (curDate != triggerDate) {
+            if (curDate < triggerDate) {
                 Log($"new day {curDate.ToString()}, but not our day", LogLevel.Debug);
                 return;
             }
