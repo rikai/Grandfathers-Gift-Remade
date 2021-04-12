@@ -158,7 +158,6 @@ namespace GrandfatherGiftRemadeMod
             {
                 farmer.moveRelTiles(h: -1, faceDir: 2);
                 Log("Farmer is married. Moved farmer out of spouse bed", LogLevel.Trace);
-                return;
             }
             else
             {
@@ -178,8 +177,7 @@ namespace GrandfatherGiftRemadeMod
             if (farmer.isMarried())
             {
                 cloc.setObject(farmer.relTiles(v: 1), chest); 
-                Log("Farmer is in love. Chest placed below", LogLevel.Trace);
-                return;
+                Log("Farmer is in love. Chest placed below.", LogLevel.Trace);
             }
             else
             {
@@ -193,7 +191,6 @@ namespace GrandfatherGiftRemadeMod
             if (Config.directToChest) {
                 chest.addItem(weapon);
                 Log("inserted weapon into chest", LogLevel.Trace);
-                return;
             }
 
             farmer.holdUpItemThenMessage(weapon);
