@@ -1,12 +1,12 @@
 {
-  "Name": "Grandfather's Gift Remade",
-  "Author": "pepoluan",
-  "Version": "1.3.0",
-  "Description": "A remade of the Grandfather's Gift mod on NexusMods",
-  "UniqueID": "pepoluan.GrandfatherGiftRemade",
-  "EntryDll": "GrandfatherGiftRemade.dll",
-  "MinimumApiVersion": "2.11.0",
-  "UpdateKeys": [ "Nexus:4151", "Chucklefish:5783" ],
+  "Name": "Grandfather's Heirlooms",
+  "Author": "rikai",
+  "Version": "2.0.0",
+  "Description": "A continuation of the Grandfather's Gift Remade",
+  "UniqueID": "rikai.GrandfathersHeirlooms",
+  "EntryDll": "GrandfathersHeirlooms.dll",
+  "MinimumApiVersion": "1.0",
+  "UpdateKeys": [ "Nexus:8557" ],
   "Meta:Changelog": {
     "1.0.0": "Initial Public Release",
     "1.0.1": "Updated UpdateKeys",
@@ -18,6 +18,6 @@
     "1.2.3": "Behind-the-scenes optimization",
     "1.2.4": "Change weapon log to Info level; suppress warning of unused const",
     "1.2.5": "Revert skipping mod after triggered once because state is game-wide instead of per-save",
-    "1.3.0": "Set positioning based on marriage state, code cleanup+modernization & Only trigger before set date."
+    "2.0.0": "Set positioning based on marriage state, code cleanup/modernization, more detailed logging, rename project, ipdate copyright, GUID & description"
   }
 }

@@ -10,7 +10,7 @@ using StardewValley.Tools;
 using StardewValley.Objects;
 using pepoHelper;
 
-namespace GrandfatherGiftRemadeMod
+namespace GrandfathersHeirlooms
 {
     class ModConfig {
         public int triggerDay { get; set; }
@@ -28,7 +28,7 @@ namespace GrandfatherGiftRemadeMod
     }
 
     /// <summary>Mod entry point</summary>
-    public class GrandfatherGiftRemade : Mod, IAssetEditor
+    public class GrandfathersHeirlooms : Mod, IAssetEditor
     {
         /***** Constants *****/
         const int WEAP_ID = 20;
@@ -125,10 +125,15 @@ namespace GrandfatherGiftRemadeMod
         private void OnDayStarted(object sender, DayStartedEventArgs e) {
             var curDate = SDate.Now();
             if (curDate < triggerDate) {
-                Log($"new day {curDate.ToString()}, but not our day", LogLevel.Debug);
+                Log($"new day {curDate.ToString()}, our day is coming.", LogLevel.Debug);
                 return;
             }
-            Log($"new day {curDate.ToString()}, our day", LogLevel.Debug);
+            else if (curDate > triggerDate)
+            {
+                Log($"new day {curDate.ToString()}, our day has passed.", LogLevel.Debug);
+                return;
+            }
+            Log($"new day {curDate.ToString()}, is our day", LogLevel.Debug);
 
             farmer = Game1.player;
             weapon = new MeleeWeapon(WEAP_ID);

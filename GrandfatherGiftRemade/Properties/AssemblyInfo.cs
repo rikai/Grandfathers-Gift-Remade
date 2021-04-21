@@ -5,12 +5,12 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("GrandfatherGiftRemade")]
-[assembly: AssemblyDescription("A remake of the Grandfather's Gift mod for Stardew Valley")]
+[assembly: AssemblyTitle("GrandfathersHeirlooms")]
+[assembly: AssemblyDescription("A continuation of the Grandfather's Gift Remade mod for Stardew Valley")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("GrandfatherGiftRemade")]
-[assembly: AssemblyCopyright("Copyright ©  2019 pepoluan")]
+[assembly: AssemblyProduct("GrandfatherHeirlooms")]
+[assembly: AssemblyCopyright("Copyright ©  2021 rikai")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -20,7 +20,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("ce9f1792-4e44-4283-9e73-24d4940c5a4e")]
+[assembly: Guid("5a30a3ca-c04a-4880-b414-b9f1c1b647d4")]
 
 // Version information for an assembly consists of the following four values:
 //
@@ -32,4 +32,4 @@ using System.Runtime.InteropServices;
 // You can specify all the values or you can default the Build and Revision Numbers
 // by using the '*' as shown below:
 // [assembly: AssemblyVersion("1.0.*")]
-[assembly: AssemblyVersion("1.2.5")]
+[assembly: AssemblyVersion("2.0.0")]
